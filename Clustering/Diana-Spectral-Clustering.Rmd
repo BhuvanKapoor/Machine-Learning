@@ -1,0 +1,71 @@
+---
+title: "Diana & Spectral Clustering"
+author: "Bhuvan Kapoor [23MDT1003]"
+date: "2024-03-19"
+output: word_document
+---
+
+```{r echo=TRUE}
+# Diana
+library(datasets)
+library(cluster)
+library(factoextra)
+library(purrr)
+
+df <- iris[,1:4]
+dv <- diana(df, metric = "euclidean", stand = T)
+print(dv)
+plot(dv)
+
+for (i in 2:5){
+  dvcut <- cutree(as.hclust(dv), k=i)
+  print(table(dvcut))
+}
+
+
+## Spectral Clustering
+
+library(igraph)
+A <- rbind(c(0,0.8,0.6,0,0.1,0),c(0.8,0,0.8,0,0,0),c(0.6,0.8,0,0.2,0,0),c(0,0,0.2,0,0.8,0.7),c(0.1,0,0,0.8,0,0.8),c(0,0,0,0.7,0.8,0))
+A
+
+ig <- graph.adjacency(A, mode = 'undirected', weighted = T)
+plot(ig, edge.label = E(ig)$weight)
+
+D <- diag(apply(A,1,sum))
+D
+
+L <- D-A
+L
+
+eigen_L <- eigen(L)
+plot(eigen_L$values)
+
+eigen_L$vectors
+
+k <- 2
+z <- eigen_L$vectors[,5:6]
+z
+# swapping the z matrix
+z <- cbind(eigen_L$vectors[,6],eigen_L$vectors[,5])
+# or z[,c(1,2)] = z[,c(2,1)]
+z
+
+# Normalizing the Z matrix
+denominator <- sqrt(apply(z^2,1,sum))
+
+denorminator2 <- replicate(k, expr = denominator)
+denorminator2
+
+y <- z/denorminator2
+y
+plot(y)
+
+# Apply KMeans on y
+spec_cluster <- kmeans(y, centers = 2, nstart = 100)
+spec_cluster$cluster
+spec_cluster$size
+spec_cluster$centers
+
+```
+

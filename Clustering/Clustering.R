@@ -1,0 +1,64 @@
+# Experiment: Clustering
+
+# KMeans Clustering
+library(ggplot2)
+library(cluster)
+library(tidyverse)
+library(factoextra)
+library(gridExtra)
+
+df <- USArrests
+df <- na.omit(df)
+df <- scale(df)
+
+head(df)
+
+k2 <- kmeans(df, centers = 2, nstart = 25)
+str(k2)
+k2
+
+fviz_cluster(k2, df)
+
+k3 <- kmeans(df, centers = 3, nstart = 25)
+k4 <- kmeans(df, centers = 4, nstart = 25)
+k5 <- kmeans(df, centers = 5, nstart = 25)
+
+p1 <- fviz_cluster(k2, geom = 'point', data = df) + ggtitle("K=2")
+p2 <- fviz_cluster(k3, geom = 'point', data = df) + ggtitle("K=3")
+p3 <- fviz_cluster(k4, geom = 'point', data = df) + ggtitle("K=4")
+p4 <- fviz_cluster(k5, geom = 'point', data = df) + ggtitle("K=5")
+
+grid.arrange(p1, p2, p3, p4, nrow = 2)
+
+# selecting optimum number of clusters
+set.seed(123)
+fviz_nbclust(df, kmeans, method = 'wss')
+set.seed(123)
+fviz_nbclust(df, kmeans, method = 'silhouette')
+set.seed(123)
+gap_stat <- clusGap(df, FUN = kmeans, nstart = 25, K.max = 10, B = 50)
+fviz_gap_stat(gap_stat)
+set.seed(123)
+final <- kmeans(df, 2, nstart = 25)
+print(final)
+fviz_cluster(final, geom = 'point', data = df)
+
+
+
+# Agglomeritive (AGNES)
+data <- iris
+hca1 <- agnes(data, method = "complete")
+pltree(hca1, cex = 0.6, hand = -1, main = 'Dendrogram')
+dvcut <- cutree(as.hclust(hca1),k=3)
+table(dvcut)
+
+hca2 <- agnes(data, method = "single")
+pltree(hca2, cex = 0.6, hand = -1, main = 'Dendrogram')
+dvcut <- cutree(as.hclust(hca2),k=3)
+table(dvcut)
+
+hca3 <- agnes(data, method = "average")
+pltree(hca3, cex = 0.6, hand = -1, main = 'Dendrogram')
+dvcut <- cutree(as.hclust(hca3),k=3)
+table(dvcut)
+
